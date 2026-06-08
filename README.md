@@ -10,7 +10,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/tracer-llm)](https://pypi.org/project/tracer-llm/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![CI](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/adrida/tracer/actions)
-[![Website](https://img.shields.io/badge/website-tracer.deeprecall.io-blue)](https://tracer.deeprecall.io)
+[![Website](https://img.shields.io/badge/website-tracerml.ai-blue)](https://tracerml.ai)
 [![Docs](https://img.shields.io/badge/docs-docs.tracer.deeprecall.io-blue)](https://docs.tracer.deeprecall.io)
 
 Most LLM-based classification pipelines use a large language model for every single input. In practice, the vast majority of that traffic is predictable - a lightweight traditional ML model (logistic regression, gradient-boosted trees, or a small neural net) can match the LLM's output with near-perfect agreement.
