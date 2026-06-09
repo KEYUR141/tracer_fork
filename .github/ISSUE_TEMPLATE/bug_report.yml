@@ -1,0 +1,38 @@
+name: Bug report
+description: Something behaves incorrectly, with a reproduction.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A strong bug report names the affected files and includes a minimal
+        script that reproduces the behavior. See issues #29, #30, #31 for the
+        standard.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happens, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: A minimal, runnable script or set of steps that reproduces the behavior.
+      render: python
+    validations:
+      required: true
+  - type: input
+    id: affected
+    attributes:
+      label: Affected files / lines
+      description: Where in the source you believe the issue lives (if known).
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: TRACER version / commit
+    validations:
+      required: true

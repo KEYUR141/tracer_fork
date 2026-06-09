@@ -1,0 +1,35 @@
+name: Feature request
+description: Propose a feature or behavior change (not a model addition).
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If your request changes a core parameter, threshold, gate, calibration,
+        or default config, it must include an ablation showing the frontier does
+        not regress on a reproducible eval. See CONTRIBUTING.md. Open-ended
+        questions belong in Discussions, not here.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: The concrete problem this solves. What breaks or is missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What you want to change, and where in the codebase.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence (required if this touches routing behavior)
+      description: >
+        If this changes any core parameter, threshold, gate, or default,
+        provide before/after numbers on the eval (coverage at target agreement,
+        realized agreement on a held-out split) showing it does not regress.
+    validations:
+      required: false

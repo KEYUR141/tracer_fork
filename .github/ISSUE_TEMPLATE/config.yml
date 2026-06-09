@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or open-ended idea
+    url: https://github.com/adrida/tracer/discussions
+    about: "Exploratory questions (how would TRACER handle X?, is this a fit for Y?) belong in Discussions. Issues are for actionable, evidenced work."

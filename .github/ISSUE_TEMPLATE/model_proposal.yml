@@ -1,0 +1,44 @@
+name: Surrogate model proposal
+description: Propose adding a new surrogate model to the zoo. Benchmark required.
+labels: ["model-proposal", "needs-benchmark"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The surrogate zoo is not a popularity contest. We add a model only when
+        it earns a place on the coverage-vs-agreement frontier. A proposal
+        without a reproducible benchmark against the existing zoo will be closed
+        with a pointer to CONTRIBUTING.md. You are welcome to reopen it with the
+        numbers.
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: Which model, and its scikit-learn compatible implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: benchmark
+    attributes:
+      label: Benchmark vs the existing zoo
+      description: >
+        Coverage at the target teacher agreement, and realized agreement on a
+        held-out split, for your model versus the current zoo on main. Use a
+        public dataset (or the repo fixtures) and a fixed seed.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Reproduction command and config
+      description: The exact command, dataset, and seed a maintainer can run to reproduce your numbers.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: dependency
+    attributes:
+      label: New dependency cost
+      description: Any new dependency this adds, its size, and whether it can be optional.
+    validations:
+      required: false
