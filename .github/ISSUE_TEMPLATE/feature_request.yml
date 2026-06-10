@@ -6,9 +6,10 @@ body:
     attributes:
       value: |
         If your request changes a core parameter, threshold, gate, calibration,
-        or default config, it must include an ablation showing the frontier does
-        not regress on a reproducible eval. See CONTRIBUTING.md. Open-ended
-        questions belong in Discussions, not here.
+        or default config, an ablation showing the frontier does not regress on
+        a reproducible eval is what makes it easiest for us to act on (see
+        CONTRIBUTING.md). For open-ended questions, Discussions is usually a
+        better fit than an issue.
   - type: textarea
     id: problem
     attributes:

@@ -5,11 +5,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        The surrogate zoo is not a popularity contest. We add a model only when
-        it earns a place on the coverage-vs-agreement frontier. A proposal
-        without a reproducible benchmark against the existing zoo will be closed
-        with a pointer to CONTRIBUTING.md. You are welcome to reopen it with the
-        numbers.
+        Thanks for proposing a model. We're glad to grow the zoo when a model
+        earns its place on the coverage-vs-agreement frontier, and a reproducible
+        benchmark against the existing zoo is what lets us tell. Without one we'll
+        usually ask for the numbers before we can move forward (see
+        CONTRIBUTING.md). It's quick to run, and we're happy to help.
   - type: input
     id: model
     attributes:

@@ -2,37 +2,37 @@
 
 Thank you for your interest in contributing.
 
-TRACER is a research-grade routing library with formal parity guarantees. The
-project lives or dies on those guarantees holding up under measurement, so the
-bar for changes is evidence, not intuition. Please read the standards below
-before opening an issue or a PR. They exist to keep contributions focused and
-to respect everyone's time, including yours.
+TRACER is a routing library with formal parity guarantees, and those guarantees
+only mean something if they hold up under measurement. So for anything that can
+change routing behavior, the most useful thing you can bring is evidence. The
+standards below exist to keep contributions focused and to make the best use of
+your time and ours. None of this is meant to gatekeep good ideas. it's meant to
+help us evaluate them fairly.
 
 ## Contribution standards (read first)
 
-TRACER is benchmark-driven. Every change that can affect routing behavior must
-be justified with numbers, not opinion. Three rules follow from that.
+TRACER is benchmark-driven, so changes that affect routing behavior are easiest
+for us to act on when they come with numbers. Three guidelines follow from that.
 
-1. **Adding a model needs a benchmark, not a name.** "We should add model X"
-   is not a contribution. A model proposal must show, on a reproducible eval,
-   that the new surrogate improves the coverage-vs-agreement frontier over the
-   models already in the zoo (see "Adding a new surrogate model" below). An
-   issue or PR that proposes a model without that evidence will be closed with
-   a pointer back to this section. You are welcome to reopen it once you have
-   the numbers.
+1. **Adding a model: bring a benchmark, not just a name.** A request that only
+   names a model to add is hard for us to evaluate, because we can't tell
+   whether it would actually help. A model proposal is most useful when it
+   shows, on a reproducible eval, how the new surrogate compares to the models
+   already in the zoo on the coverage-vs-agreement frontier (see "Adding a new
+   surrogate model" below). Without that, we'll usually ask for a benchmark
+   before we can move forward, and we're glad to point you at how to run one.
 
-2. **Changing a core parameter, threshold, or gate needs an ablation.** The
+2. **Changing a core parameter, threshold, or gate: bring an ablation.** The
    acceptor threshold, the parity gate, the calibration logic, the default
    `FitConfig` values, and the split strategy are load-bearing for the parity
-   guarantee. A change to any of them must include before/after numbers on the
-   eval showing the frontier does not regress (and, ideally, improves). "It
-   feels like it should be configurable" is not a justification. If you believe
-   a parameter should be user-tunable, show a case where a different value wins
-   on the benchmark.
+   guarantee. A change to any of them is much easier to accept with before/after
+   numbers on the eval showing the frontier does not regress (and, ideally,
+   improves). If you think a parameter should be user-tunable, the most
+   convincing case is one where a different value measurably wins.
 
-3. **Bug reports need a reproduction.** The strongest reports name the affected
-   files and lines and include a minimal script that reproduces the behavior.
-   See issues #29, #30, and #31 for the standard we are looking for.
+3. **Bug reports: include a reproduction.** The reports we can act on fastest
+   name the affected files and lines and include a minimal script that
+   reproduces the behavior. Issues #29, #30, and #31 are good examples.
 
 If your idea is exploratory ("how would TRACER handle X?", "is this a good fit
 for Y?"), open a **GitHub Discussion** rather than an issue. Issues are for
@@ -47,11 +47,12 @@ Run against a fixed, public eval so results are reproducible by a maintainer:
 - Report the metric that matters: **coverage at the target teacher agreement**
   (how much traffic the surrogate can take while holding parity), plus the
   realized teacher agreement on a held-out split (not the calibration split).
-- Compare against the current behavior on `main`, not against nothing.
+- Compare against the current behavior on `main`, so the delta is clear.
 - Include the exact command and config you ran so the numbers can be checked.
 
-A change that does not move (or that hurts) the frontier will not be merged,
-no matter how clean the code is.
+If a change does not move the frontier (or regresses it), we'll usually hold
+off on merging even when the code itself is clean, since the numbers are what
+we're optimizing for.
 
 ## Setup
 
@@ -107,8 +108,8 @@ src/tracer/
 
 ## Adding a new surrogate model
 
-The surrogate zoo is not a popularity contest. We add a model only when it
-earns a place on the frontier.
+We're happy to grow the zoo when a model earns its place on the frontier. The
+benchmark is what tells us it does.
 
 1. Add a factory to the `_candidates()` dict in `src/tracer/fit/surrogate.py`.
    The model must implement the scikit-learn `fit` / `predict` / `predict_proba`
@@ -119,8 +120,8 @@ earns a place on the frontier.
 3. Account for the dependency cost. A new heavy dependency needs to pay for
    itself in the numbers, and should be optional where possible.
 
-A PR that adds a model without (2) will be closed with a request for the
-benchmark.
+If a PR adds a model without (2), we'll ask for the benchmark before reviewing
+further. It's usually quick to run, and it's the thing that lets us say yes.
 
 ## Changing the gate, calibration, or default config
 
