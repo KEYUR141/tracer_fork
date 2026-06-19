@@ -12,6 +12,7 @@ from __future__ import annotations
 import getpass
 import json as _json
 import os
+import re
 import sys
 import time
 from typing import Any
@@ -76,10 +77,19 @@ def _resolve_tenant(client: CloudClient, want: str | None) -> dict[str, Any]:
     return tenants[0]
 
 
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I
+)
+
+
 def _resolve_tracer(client: CloudClient, ref: str) -> dict[str, Any]:
-    # Try by id, then by slug.
-    rows = client.db("tracer_summary", select="*", filters={"id": f"eq.{ref}"})
-    if not rows:
+    # A UUID ref is queried by id; anything else is treated as a slug. The id
+    # column is uuid-typed, so sending a non-uuid as an id filter makes
+    # PostgREST 400 ("invalid input syntax for type uuid") before any slug
+    # fallback could run -- so pick the right column up front.
+    key = "id" if _UUID_RE.match(ref or "") else "slug"
+    rows = client.db("tracer_summary", select="*", filters={key: f"eq.{ref}"})
+    if not rows and key == "id":
         rows = client.db("tracer_summary", select="*", filters={"slug": f"eq.{ref}"})
     if not rows:
         raise CloudError(f"tracer not found: {ref}")
@@ -514,6 +524,9 @@ def _cmd_keys(client: CloudClient, args) -> None:
         _table(res.get("keys", []), ["id", "name", "prefix", "last4", "last_used_at", "revoked_at"])
     elif args.action == "create":
         res = client.api("POST", base, json_body={"name": args.name})
+        if args.json:
+            _print_json(res)
+            return
         print(_c("✓ key (shown once):", _GREEN), res.get("full_key"))
     elif args.action == "revoke":
         client.api("DELETE", f"{base}/{args.id}")
@@ -532,6 +545,9 @@ def _cmd_ingest_keys(client: CloudClient, args) -> None:
     elif args.action == "create":
         tenant = _resolve_tenant(client, args.tenant)
         res = client.api("POST", "/api/observe/keys", json_body={"tenant_id": tenant["id"], "name": args.name})
+        if args.json:
+            _print_json(res)
+            return
         print(_c("✓ ingest key (shown once):", _GREEN), res.get("full_key"))
     elif args.action == "revoke":
         client.api("DELETE", f"/api/observe/keys/{args.id}")
@@ -574,7 +590,9 @@ def _cmd_billing(client: CloudClient, args) -> None:
 
 
 def _cmd_scan(client: CloudClient, args) -> None:
-    res = client.api_multipart("/api/scan", {}, args.file)
+    # /api/scan is public (matches the anonymous web /scan flow), so the scan
+    # works logged out; the bearer is attached only if a session exists.
+    res = client.api_multipart("/api/scan", {}, args.file, auth="optional")
     # The agent may need to disambiguate the file format. Re-submit with answers
     # (CLI flags override the server's best-guess defaults) so the scan is
     # non-interactive instead of silently no-opping on an ambiguous file.
@@ -587,7 +605,9 @@ def _cmd_scan(client: CloudClient, args) -> None:
         if args.task:
             answers["task"] = args.task
         print(_c("clarifying format", _DIM), _json.dumps(answers))
-        res = client.api_multipart("/api/scan", {"answers": _json.dumps(answers)}, args.file)
+        res = client.api_multipart(
+            "/api/scan", {"answers": _json.dumps(answers)}, args.file, auth="optional"
+        )
     job_id = res.get("job_id") if isinstance(res, dict) else None
     if not job_id:
         _print_json(res)
@@ -596,7 +616,7 @@ def _cmd_scan(client: CloudClient, args) -> None:
     print(_c("link", _DIM), f"{client.base_url}/scan/{job_id}")
     start = time.time()
     while time.time() - start < 300:
-        st = client.api("GET", f"/api/scan/{job_id}")
+        st = client.api("GET", f"/api/scan/{job_id}", auth="optional")
         if st.get("status") == "ready":
             print(_c("✓", _GREEN), "scan ready")
             if getattr(args, "json", False):
@@ -964,8 +984,9 @@ def run(args) -> None:
         print("usage: tracer cloud <subcommand>  (try `tracer cloud --help`)")
         sys.exit(1)
     client = CloudClient.load()
-    # login/logout don't require an existing session.
-    if cmd not in ("login", "logout") and not client.logged_in:
+    # login/logout don't require an existing session; `scan` is a public
+    # endpoint (mirrors the anonymous web /scan) so it runs logged out too.
+    if cmd not in ("login", "logout", "scan") and not client.logged_in:
         print(_c("not logged in.", _RED), "run `tracer cloud login` first.")
         sys.exit(1)
     handler = _DISPATCH.get(cmd)

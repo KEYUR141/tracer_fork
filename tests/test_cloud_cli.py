@@ -97,6 +97,31 @@ def test_tenant_delete_calls_rpc_when_confirmed():
     assert c.rpc_calls == [("delete_company_tenant", {"_tenant": "t1"})]
 
 
+# ----- _resolve_tracer picks id vs slug by ref shape ------------------------- #
+class _ResolveClient:
+    def __init__(self):
+        self.filters = []
+
+    def db(self, view, **kw):
+        self.filters.append(kw.get("filters"))
+        return [{"id": "t-1", "slug": "my-tracer"}]
+
+
+def test_resolve_tracer_uses_slug_for_nonuuid():
+    # A slug must NOT be sent as an id filter (the id column is uuid-typed and
+    # PostgREST 400s on a non-uuid before any fallback can run).
+    c = _ResolveClient()
+    cli._resolve_tracer(c, "my-tracer")
+    assert c.filters[0] == {"slug": "eq.my-tracer"}
+
+
+def test_resolve_tracer_uses_id_for_uuid():
+    c = _ResolveClient()
+    uid = "38b9a2cf-7888-4ebd-a136-18add9c1d56a"
+    cli._resolve_tracer(c, uid)
+    assert c.filters[0] == {"id": f"eq.{uid}"}
+
+
 # ----- _table doesn't crash on empty ----------------------------------------- #
 def test_table_empty(capsys):
     cli._table([], ["a", "b"])

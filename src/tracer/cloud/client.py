@@ -39,7 +39,7 @@ class CloudError(RuntimeError):
 
 # A real User-Agent: the default "Python-urllib/x" trips Cloudflare's bot
 # protection on app.tracerml.ai (HTTP 403, CF error 1010).
-USER_AGENT = "tracer-cli/0.3.0 (+https://tracerml.ai)"
+USER_AGENT = "tracer-cli/0.3.1 (+https://tracerml.ai)"
 
 
 def _http(
@@ -191,6 +191,21 @@ class CloudClient:
             self._refresh()
         return self.cfg["access_token"]
 
+    def _auth_header(self, auth: str) -> dict[str, str]:
+        """Build the Authorization header for a request.
+
+        auth="required" (default): a session is mandatory (raises if absent).
+        auth="optional": attach the bearer when logged in, otherwise call
+            anonymously -- for public endpoints (e.g. /api/scan) that work
+            without an account, matching the public web flow.
+        auth="none": never attach a bearer.
+        """
+        if auth == "none":
+            return {}
+        if auth == "optional" and not self.logged_in:
+            return {}
+        return {"Authorization": f"Bearer {self._access_token()}"}
+
     def logout(self) -> None:
         for k in ("access_token", "refresh_token", "expires_at", "email", "user_id"):
             self.cfg.pop(k, None)
@@ -204,11 +219,12 @@ class CloudClient:
         *,
         json_body: Any | None = None,
         params: dict[str, Any] | None = None,
+        auth: str = "required",
     ) -> Any:
         url = f"{self.base_url}{path}"
         if params:
             url += "?" + urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
-        headers = {"Authorization": f"Bearer {self._access_token()}"}
+        headers = {**self._auth_header(auth), "Origin": self.base_url}
         data = None
         if json_body is not None:
             headers["Content-Type"] = "application/json"
@@ -220,7 +236,9 @@ class CloudClient:
             raise CloudError(f"{method} {path} -> {status}: {err}")
         return payload
 
-    def api_multipart(self, path: str, fields: dict[str, str], file_path: str | None) -> Any:
+    def api_multipart(
+        self, path: str, fields: dict[str, str], file_path: str | None, *, auth: str = "required"
+    ) -> Any:
         """POST multipart/form-data (used by the upload + create routes)."""
         boundary = f"----tracer{uuid.uuid4().hex}"
         buf = io.BytesIO()
@@ -245,7 +263,8 @@ class CloudClient:
         w(f"--{boundary}--\r\n")
 
         headers = {
-            "Authorization": f"Bearer {self._access_token()}",
+            **self._auth_header(auth),
+            "Origin": self.base_url,
             "Content-Type": f"multipart/form-data; boundary={boundary}",
         }
         status, body, _ = _http(

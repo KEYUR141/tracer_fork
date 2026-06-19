@@ -3,6 +3,17 @@
 All notable changes to TRACER are recorded here. This project follows semantic
 versioning.
 
+## 0.3.1 (2026-06)
+
+### Changed
+- `tracer cloud` commands that take a tracer (`get`, `training`, `analytics`,
+  `label-space`, `traces`, ...) now accept either the tracer slug or its id.
+- `tracer cloud scan` works without logging in, matching the public web scan.
+
+### Fixed
+- `tracer cloud keys create` and `tracer cloud ingest-keys create` now honor
+  `--json` and emit the created record (including the one-time secret) as JSON.
+
 ## 0.3.0 (2026-06)
 
 ### Added
