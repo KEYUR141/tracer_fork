@@ -252,6 +252,10 @@ def build_global(split, target_ta, alpha: float = 0.1, log: Optional[LogFn] = No
     clf, name, val_m = search_best_surrogate(
         split["X_train"], split["y_train"], split["X_val"], split["y_val"],
         on_candidate=_candidate_log(log), skip=skip)
+    if clf is None:
+        log("  build_global: all surrogate candidates failed (no model trained)")
+        return {"method": "global", "stages": [], "summary": {
+            "status": "no_stage", "coverage_cal_total": 0.0}}
     log(f"  build_global: surrogate done in {time.perf_counter()-t0:.1f}s  best={name} f1={val_m['teacher_f1']:.3f}")
     preds_cal = clf.predict(split["X_cal"])
     n_cal = len(preds_cal)
@@ -297,6 +301,9 @@ def _build_accepting_stage(X_tr, y_tr, X_val, y_val, X_cal, y_cal, target_ta, st
     log(f"  {stage_name}: surrogate sweep on {len(X_tr)} train / {len(X_val)} val")
     clf, name, val_m = search_best_surrogate(
         X_tr, y_tr, X_val, y_val, on_candidate=_candidate_log(log), skip=skip)
+    if clf is None:
+        log(f"  {stage_name}: all surrogate candidates failed (no model trained)")
+        return None
     log(f"  {stage_name}: surrogate done in {time.perf_counter()-t0:.1f}s  best={name} f1={val_m['teacher_f1']:.3f}")
     preds_val, probs_val = _predict(clf, X_val)
     preds_cal, probs_cal = _predict(clf, X_cal)

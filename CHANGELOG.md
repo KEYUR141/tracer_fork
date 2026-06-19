@@ -3,6 +3,23 @@
 All notable changes to TRACER are recorded here. This project follows semantic
 versioning.
 
+## 0.3.3 (2026-06)
+
+### Fixed
+- `build_global()` and `_build_accepting_stage()` no longer crash with a
+  `TypeError` when all surrogate candidates fail to train. They now return a
+  structured failure state, consistent with every other non-deployable path.
+- `Router.load()` now raises a clear `ValueError` when `manifest.json`
+  reports `selected_method: null`, instead of silently loading a stale
+  `pipeline.joblib` left on disk from a previous fit.
+
+## 0.3.2 (2026-06)
+
+### Fixed
+- `load_traces()` now reports the correct 1-indexed file line number in
+  `ValueError` messages. Previously the count excluded blank lines, so
+  the reported line was lower than the actual position of the bad record.
+
 ## 0.3.1 (2026-06)
 
 ### Changed

@@ -78,7 +78,7 @@ def __getattr__(name: str):
     return obj
 
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 __all__ = [
     # Core API

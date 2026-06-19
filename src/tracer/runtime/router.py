@@ -56,6 +56,12 @@ class Router:
         import json as _json
         artifact_dir = Path(artifact_dir)
         manifest = load_manifest(artifact_dir / "manifest.json")
+        if manifest.selected_method is None:
+            raise ValueError(
+                f"No router is deployed in {artifact_dir}: the parity gate did not "
+                "certify any method (selected_method is null in manifest.json). "
+                "Run tracer.fit() again with more data or a lower target_teacher_agreement."
+            )
         bundle = load_pipeline(artifact_dir)
         stages = bundle["pipeline"]["stages"]
         label_space = bundle["label_space"]
